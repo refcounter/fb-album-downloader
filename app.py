@@ -9,7 +9,7 @@ app_info = """Downloads a Facebook album from a page"""
 host = "https://free.facebook.com/"
 
 def save_photo(path, link, counter):
-    img = get(link, stream=True)
+    img = get(link, stream=True, allow_redirects=True)
     file_name = f'{path}/{counter}.png'
 
     with open(file_name, 'wb') as photo:
@@ -25,11 +25,10 @@ def setup_logger(path):
 def find_next_img(html):
     next_link = html.find('a',
             text='Seguinte' or 'Next').attrs['href']
-    img_link = html.find('a', class_='sec'
-            ).attrs['href']
+    img_link = html.find('a', class_='sec').attrs['href']
 
     return {'nxt': host + next_link, 
-            'img': host + img_link}
+            'img': img_link}
         
 
 def get_limited_from_page(args):
@@ -40,7 +39,7 @@ def get_limited_from_page(args):
 
     while counter <= args.count:
         links = find_next_img(html) 
-        save_photo(args.path, host + links['img'], counter)
+        save_photo(args.path, links['img'], counter)
         page = get(links['nxt'])
         html = BS(page.content, 'lxml')
 
