@@ -14,7 +14,6 @@ def save_photo(path, link, counter):
 
     with open(file_name, 'wb') as photo:
        shutil.copyfileobj(img.raw, photo)
-       logging.info(f'Downloaded img {counter}: {link}')
 
 
 def setup_logger(path):
@@ -44,6 +43,7 @@ def get_limited_from_page(args):
         html = BS(page.content, 'lxml')
 
         print(f"downloading img  {counter}")
+        logging.info('last visited: '+links['nxt'])
         counter +=1
 
 
@@ -56,17 +56,15 @@ def get_all_from_page(args):
     html = BS(page.content, 'lxml')
 
     while next_link != init_link:
-        next_link = html.find('a', {'class':'bb'},
-            text='Next' or 'Seguinte')['href']
-        img_link = html.find('a', {'class':'sec'},
-                text='View Full Size' or 
-                'Ver tamanho completo')['href']
-
-        save_photo(args.path, host + img_link, counter)
-        page = get(next_link)
+        links = find_next_img(html) 
+        save_photo(args.path, links['img'], counter)
+        page = get(links['nxt'])
         html = BS(page.content, 'lxml')
 
+        print(f"downloading img  {counter}")
+        logging.info('last visited: '+links['nxt'])
         logging.debug(f'getting {next_link}')
+        next_link = links['nxt']
         counter +=1 
 
 def make_download_dir(path):
